@@ -13,7 +13,7 @@ jobs:
           echo "//registry.visualpinball.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
           cd ./Packages/NativeTrees
-          npm publish
+          npm publish --registry=https://registry.visualpinball.org/
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
