@@ -11,6 +11,7 @@ jobs:
       - name: Publish
         run: |
           echo "//registry.visualpinball.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          echo "always-auth=true" >> ~/.npmrc
           cd ./Packages/NativeTrees
           npm publish
         env:
