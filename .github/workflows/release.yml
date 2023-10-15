@@ -15,10 +15,11 @@ jobs:
         uses: VisualPinball/next-version-action@v0.1.7
         with:
           tagPrefix: 'v'
-          path: Packages/NativeTrees
+          path: ./Packages/NativeTrees
       - name: Bump
         if: ${{ steps.nextVersion.outputs.isBump == 'true' }} 
         run: |
+          cd ./Packages/NativeTrees
           npm version ${{ steps.nextVersion.outputs.nextVersion }} --no-git-tag-version    
       - name: Commit
         id: commit
@@ -26,7 +27,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Packages/NativeTrees/package.json
+          git add ./Packages/NativeTrees/package.json
           git commit -m "release: ${{ steps.nextVersion.outputs.nextTag }}."
           git push
           commitish=$(git rev-parse HEAD)
