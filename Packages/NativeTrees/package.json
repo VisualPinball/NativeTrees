@@ -1,6 +1,20 @@
 {
   "name": "com.bartofzo.nativetrees",
   "displayName": "NativeTrees",
+  "author": {
+    "name": "bartofzo",
+    "url": "https://github.com/bartofzo"
+  },
+  "contributors": [
+    {
+      "name": "freezy",
+      "url": "https://github.com/freezy"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VisualPinball/NativeTrees.git"
+  },
   "version": "0.1.9",
   "unity": "2021.3",
   "description": "Generic, burst compatible sparse octree and quadtree \nthat store objects together with their axis aligned bounding boxes (AABB's)",
