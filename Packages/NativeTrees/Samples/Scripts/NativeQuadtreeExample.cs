@@ -6,6 +6,12 @@ using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+#if UNITY_6000_5_OR_NEWER
+using TreeObjectId = UnityEngine.EntityId;
+#else
+using TreeObjectId = System.Int32;
+#endif
+
 namespace NativeTrees.Samples
 {
     public class NativeQuadtreeExample : MonoBehaviour
@@ -14,10 +20,10 @@ namespace NativeTrees.Samples
         public GameObject squarePrefab;
         public Camera camera;
         
-        private NativeQuadtree<int> quadtree;
-        private Dictionary<int, QuadtreeSquare> squares = new Dictionary<int, QuadtreeSquare>();
-        private NativeList<int> overlap;
-        private NativeQueue<int> nearest;
+        private NativeQuadtree<TreeObjectId> quadtree;
+        private Dictionary<TreeObjectId, QuadtreeSquare> squares = new Dictionary<TreeObjectId, QuadtreeSquare>();
+        private NativeList<TreeObjectId> overlap;
+        private NativeQueue<TreeObjectId> nearest;
 
         private Vector2 mouseDownPos;
         
@@ -27,9 +33,9 @@ namespace NativeTrees.Samples
             Vector2 camExtents = .5f * new Vector2(camera.orthographicSize * camera.aspect, camera.orthographicSize);
 
             var bounds = new AABB2D(camPos - camExtents, camPos + camExtents);
-            quadtree = new NativeQuadtree<int>(bounds, Allocator.Persistent);
-            nearest = new NativeQueue<int>(Allocator.Persistent);
-            overlap = new NativeList<int>(Allocator.Persistent);
+            quadtree = new NativeQuadtree<TreeObjectId>(bounds, Allocator.Persistent);
+            nearest = new NativeQueue<TreeObjectId>(Allocator.Persistent);
+            overlap = new NativeList<TreeObjectId>(Allocator.Persistent);
             
             for (int i = 0; i < squareCount; i++)
             {
@@ -39,9 +45,10 @@ namespace NativeTrees.Samples
                     );
                 
                 var square = Instantiate(squarePrefab, pos, Quaternion.identity).GetComponent<QuadtreeSquare>();
-                
-                quadtree.Insert(square.GetInstanceID(), square.Bounds);
-                squares.Add(square.GetInstanceID(), square);
+                var squareId = GetObjectId(square);
+
+                quadtree.Insert(squareId, square.Bounds);
+                squares.Add(squareId, square);
             }
             
             Debug.Log("Enable game view gizmos!");
@@ -67,7 +74,7 @@ namespace NativeTrees.Samples
             }
 
             /*
-            if (quadtree.TryGetNearestAABB(mousePos, 100, out int nearestId))
+            if (quadtree.TryGetNearestAABB(mousePos, 100, out TreeObjectId nearestId))
             {
                 if (squares.TryGetValue(prevNearest, out var prev))
                 {
@@ -82,23 +89,23 @@ namespace NativeTrees.Samples
 
             // Get the 10 nearest squares to the mouse
             // we wouldn't have to use the hashset if the objects were points
-            NativeParallelHashSet<int> set = new NativeParallelHashSet<int>(10, Allocator.Temp);
+            NativeParallelHashSet<TreeObjectId> set = new NativeParallelHashSet<TreeObjectId>(10, Allocator.Temp);
             nearest.Clear();
             var nearestTen = new NearestTen()
             {
                 nearest = nearest,
                 set = set
             };
-            quadtree.Nearest(mousePos, 100, ref nearestTen, default(NativeQuadtreeExtensions.AABBDistanceSquaredProvider<int>));
+            quadtree.Nearest(mousePos, 100, ref nearestTen, default(NativeQuadtreeExtensions.AABBDistanceSquaredProvider<TreeObjectId>));
             set.Dispose();
         }
         
-        struct NearestTen : IQuadtreeNearestVisitor<int>
+        struct NearestTen : IQuadtreeNearestVisitor<TreeObjectId>
         {
-            public NativeQueue<int> nearest;
-            public NativeParallelHashSet<int> set;
+            public NativeQueue<TreeObjectId> nearest;
+            public NativeParallelHashSet<TreeObjectId> set;
             
-            public bool OnVist(int obj)
+            public bool OnVist(TreeObjectId obj)
             {
                 if (set.Add(obj))
                     nearest.Enqueue(obj);
@@ -115,7 +122,7 @@ namespace NativeTrees.Samples
             
             // Nearest (red)
             Gizmos.color = Color.red;
-            while (nearest.TryDequeue(out int squareId))
+            while (nearest.TryDequeue(out TreeObjectId squareId))
             {
                 var square = squares[squareId];
                 var size = square.Bounds.Size;
@@ -150,6 +157,15 @@ namespace NativeTrees.Samples
 
             Gizmos.color = Color.black;
             quadtree.DrawGizmos();
+        }
+
+        private static TreeObjectId GetObjectId(UnityEngine.Object obj)
+        {
+#if UNITY_6000_5_OR_NEWER
+            return obj.GetEntityId();
+#else
+            return obj.GetInstanceID();
+#endif
         }
     }
 }
