@@ -15,7 +15,7 @@
     "type": "git",
     "url": "https://github.com/VisualPinball/NativeTrees.git"
   },
-  "version": "0.1.9",
+  "version": "0.1.10",
   "unity": "2021.3",
   "description": "Generic, burst compatible sparse octree and quadtree \nthat store objects together with their axis aligned bounding boxes (AABB's)",
   "keywords": [
